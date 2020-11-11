@@ -15,18 +15,18 @@
 #define encR_pinB 4 //outoutB digital pin3
 
 void isrA(), isrB();
-#define read_encL_A bitRead(PIND, encL_pinA) //faster than digitalRead()
-#define read_encL_B bitRead(PIND, encL_pinB) //faster than digitalRead()
-#define read_encR_A bitRead(PIND, encR_pinA) //faster than digitalRead()
-#define read_encR_B bitRead(PIND, encR_pinB) //faster than digitalRead()
+#define read_encL_A bitRead(PINE, 5) //faster than digitalRead()
+#define read_encL_B bitRead(PINE, 3) //faster than digitalRead()
+#define read_encR_A bitRead(PINE, 4) //faster than digitalRead()
+#define read_encR_B bitRead(PING , 5) //faster than digitalRead()
 
 volatile int step_countL = 0;
 int prot_step_countL = 0;
-int prev_step_countL = 0;
+
 
 volatile int step_countR = 0;
 int prot_step_countR = 0;
-int prev_step_countR = 0;
+
 
 volatile long step_timeL;
 volatile unsigned long prev_timeL;
@@ -160,14 +160,14 @@ void isrA()
 {
   if (read_encL_B == HIGH)
   {
-    step_countL--;
-    step_timeL = -(micros() - prev_timeL);
+    step_countL++;
+    step_timeL = +(micros() - prev_timeL);
     prev_timeL = micros();
   }
   else
   {
-    step_countL++;
-    step_timeL = (micros() - prev_timeL);
+    step_countL--;
+    step_timeL = -(micros() - prev_timeL);
     prev_timeL = micros();
   }
 }
@@ -257,9 +257,6 @@ void SendSerial()
   Serial.print(RPM_L);
   Serial.print(",");
   Serial.println(RPM_R);
-
-  prev_step_countL = prot_step_countL;
-  prev_step_countR = prot_step_countR;
 }
 
 void loop()
@@ -282,8 +279,8 @@ void loop()
     stepR_PID_output = 0;
   }
 
-  desired_RPM_L = stepL_PID_output;
-  desired_RPM_R = stepR_PID_output;
+  desired_RPM_L = 60;
+  desired_RPM_R = 60;
 
 
   if ((desired_RPM_L > 1) || (desired_RPM_L < -1))
