@@ -160,14 +160,14 @@ void isrA()
 {
   if (read_encL_B == HIGH)
   {
-    step_countL++;
-    step_timeL = (micros() - prev_timeL);
+    step_countL--;
+    step_timeL = -(micros() - prev_timeL);
     prev_timeL = micros();
   }
   else
   {
-    step_countL--;
-    step_timeL = -(micros() - prev_timeL);
+    step_countL++;
+    step_timeL = (micros() - prev_timeL);
     prev_timeL = micros();
   }
 }
@@ -248,11 +248,11 @@ void SendSerial()
   
   Serial.print(RPM_L_PID_output); //
   Serial.print(",");
-  Serial.println(RPM_R_PID_output); //
-  // Serial.print(",");
-  // Serial.print(prot_step_timeL);
-  // Serial.print(",");
-  // Serial.print(prot_step_timeR);
+  Serial.print(RPM_R_PID_output); //
+  Serial.print(",");
+  Serial.print(prot_step_timeL);
+  Serial.print(",");
+  Serial.print(prot_step_timeR);
   Serial.print(",");
   Serial.print(RPM_L);
   Serial.print(",");
