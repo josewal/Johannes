@@ -40,19 +40,19 @@ int emergency_stop = -10;
 int emergency_stop_cooldown = 0;
 
 double RPM_L, desired_RPM_L, RPM_L_PID_output;
-double RPMLKp = 5, RPMLKi = 1, RPMLKd = 0;
+double RPMLKp = 2, RPMLKi = 2, RPMLKd = 0;
 PID RPM_L_PID(&RPM_L, &RPM_L_PID_output, &desired_RPM_L, RPMLKp, RPMLKi, RPMLKd, DIRECT);
 
 double RPM_R, desired_RPM_R, RPM_R_PID_output;
-double RPMRKp = 5, RPMRKi = 1, RPMRKd = 0;
+double RPMRKp = 2, RPMRKi = 2, RPMRKd = 0;
 PID RPM_R_PID(&RPM_R, &RPM_R_PID_output, &desired_RPM_R, RPMRKp, RPMRKi, RPMRKd, DIRECT);
 
 double stepsL, desired_stepsL, stepL_PID_output;
-double stepLKp = 1, stepLKi = 0, stepLKd = 0;
+double stepLKp = 3, stepLKi = 1, stepLKd = 0;
 PID stepL_PID(&stepsL, &stepL_PID_output, &desired_stepsL, stepLKp, stepLKi, stepLKd, DIRECT);
 
 double stepsR, desired_stepsR, stepR_PID_output;
-double stepRKp = 1, stepRKi = 0, stepRKd = 0;
+double stepRKp = 3, stepRKi = 1, stepRKd = 0;
 PID stepR_PID(&stepsR, &stepR_PID_output, &desired_stepsR, stepRKp, stepRKi, stepRKd, DIRECT);
 
 int motorL_pwm;
@@ -91,13 +91,13 @@ void setup()
   RPM_R_PID.SetSampleTime(50);
   RPM_R_PID.SetMode(AUTOMATIC);
 
-  desired_stepsL = 200;
+  desired_stepsL = 75;
   stepsL = 0;
   stepL_PID.SetOutputLimits(-150, 150);
   stepL_PID.SetSampleTime(50);
   stepL_PID.SetMode(AUTOMATIC);
 
-  desired_stepsR = 200;
+  desired_stepsR = 75;
   stepsR = 0;
   stepR_PID.SetOutputLimits(-150, 150);
   stepR_PID.SetSampleTime(50);
@@ -107,16 +107,16 @@ void setup()
 void motorL(int velocity)
 {
   velocity = constrain(velocity, -255, 255);
-  if (velocity > 10)
+  if (velocity > 5)
   {
-    velocity = map(velocity, 0, 255, 50, 255);
+    velocity = map(velocity, 5, 255, 40, 255);
     analogWrite(motorA, velocity);
     digitalWrite(motorA1, HIGH);
     digitalWrite(motorA2, LOW);
   }
-  else if (velocity < -10)
+  else if (velocity < -5)
   {
-    velocity = map(velocity, 0, -255, 50, 255);
+    velocity = map(velocity, -5, -255, 40, 255);
     analogWrite(motorA, velocity);
     digitalWrite(motorA1, LOW);
     digitalWrite(motorA2, HIGH);
@@ -133,16 +133,16 @@ void motorR(int velocity)
 {
   velocity = constrain(velocity, -255, 255);
 
-  if (velocity > 10)
+  if (velocity > 5)
   {
-    velocity = map(velocity, 0, 255, 50, 255);
+    velocity = map(velocity, 5, 255, 40, 255);
     analogWrite(motorB, velocity);
     digitalWrite(motorB1, HIGH);
     digitalWrite(motorB2, LOW);
   }
-  else if (velocity < -10)
+  else if (velocity < -5)
   {
-    velocity = map(velocity, 0, -255, 50, 255);
+    velocity = map(velocity, -5, -255, 40, 255);
     analogWrite(motorB, velocity);
     digitalWrite(motorB1, LOW);
     digitalWrite(motorB2, HIGH);
@@ -210,8 +210,7 @@ void load_ISR_values()
   prot_step_timeR = constrain(step_timeR, -100000, 100000);
   interrupts();
 
-
-  if (prot_step_timeL != 100000)
+  if (prot_step_timeL < 100000)
   {
     RPM_L = 60000000 / (75 * prot_step_timeL);
   }
@@ -220,7 +219,7 @@ void load_ISR_values()
     RPM_L = 0;
   }
 
-  if (prot_step_timeR != 100000)
+  if (prot_step_timeR < 100000)
   {
     RPM_R = 60000000 / (75 * prot_step_timeR);
   }
@@ -232,18 +231,21 @@ void load_ISR_values()
 
 void SendSerial()
 {
-  Serial.print(desired_RPM_L - RPM_L); //STEP LEFT TIME ERROR
-  Serial.print(",");
-  Serial.print(desired_RPM_R - RPM_R); //STEP RIGT TIME ERROR
-  Serial.print(",");
   Serial.print(desired_stepsL - stepsL); //STEP LEFT COUNT ERROR
   Serial.print(",");
   Serial.print(desired_stepsR - stepsR); //STEP RIGHT COUNT ERROR
   Serial.print(",");
-  Serial.print(stepL_PID_output); //
+
+  Serial.print(desired_RPM_L); //
   Serial.print(",");
-  Serial.print(stepR_PID_output); //
+  Serial.print(desired_RPM_R); //
   Serial.print(",");
+
+  Serial.print(desired_RPM_L - RPM_L); //STEP LEFT TIME ERROR
+  Serial.print(",");
+  Serial.print(desired_RPM_R - RPM_R); //STEP RIGT TIME ERROR
+  Serial.print(",");
+  
   Serial.print(RPM_L_PID_output); //
   Serial.print(",");
   Serial.println(RPM_R_PID_output); //
@@ -251,10 +253,10 @@ void SendSerial()
   // Serial.print(prot_step_timeL);
   // Serial.print(",");
   // Serial.print(prot_step_timeR);
-  // Serial.print(",");
-  // Serial.print(RPM_L);
-  // Serial.print(",");
-  // Serial.println(RPM_R);
+  Serial.print(",");
+  Serial.print(RPM_L);
+  Serial.print(",");
+  Serial.println(RPM_R);
 
   prev_step_countL = prot_step_countL;
   prev_step_countR = prot_step_countR;
@@ -266,11 +268,37 @@ void loop()
   stepsL = prot_step_countL;
   stepsR = prot_step_countR;
 
-  stepL_PID.Compute();
-  stepR_PID.Compute();
+  if ((stepsL > desired_stepsL + 1) || (stepsL < desired_stepsR - 1))
+    stepL_PID.Compute();
+  else
+  {
+    stepL_PID_output = 0;
+  }
+
+  if ((stepsR > desired_stepsR + 1) || (stepsR < desired_stepsR - 1))
+    stepR_PID.Compute();
+  else
+  {
+    stepR_PID_output = 0;
+  }
 
   desired_RPM_L = stepL_PID_output;
   desired_RPM_R = stepR_PID_output;
+
+
+  if ((desired_RPM_L > 1) || (desired_RPM_L < -1))
+    RPM_L_PID.Compute();
+  else
+  {
+    RPM_L_PID_output = 0;
+  }
+
+  if ((desired_RPM_R > 1) || (desired_RPM_R < -1))
+    RPM_R_PID.Compute();
+  else
+  {
+    RPM_R_PID_output = 0;
+  }
 
   RPM_L_PID.Compute();
   RPM_R_PID.Compute();
