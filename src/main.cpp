@@ -2,12 +2,12 @@
 #include <PID_v1.h>
 
 #define motorA 6
-#define motorA1 7
-#define motorA2 8
+#define motorA1 30
+#define motorA2 28
 
-#define motorB 11
-#define motorB1 10
-#define motorB2 9
+#define motorB 7
+#define motorB1 24
+#define motorB2 26
 
 #define encL_pinA 3 //outputA digital pin2
 #define encL_pinB 5 //outoutB digital pin3
