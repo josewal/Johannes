@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <PID_v1.h>
+#include <Servo.h>
 
 #define motorA 6
 #define motorA1 7
@@ -8,6 +9,14 @@
 #define motorB 11
 #define motorB1 10
 #define motorB2 9
+
+#define servo_pin 8
+Servo servo1;
+int servo1_pos = 0;
+#define trig1_pin 37
+#define trig2_pin 35
+#define echo1_pin 36
+#define echo2_pin 34
 
 #define encL_pinA 3 //outputA digital pin2
 #define encL_pinB 5 //outoutB digital pin3
@@ -72,6 +81,31 @@ void setup()
   pinMode(encL_pinB, INPUT_PULLUP);
   pinMode(encR_pinA, INPUT_PULLUP);
   pinMode(encR_pinB, INPUT_PULLUP);
+
+  servo1.attach(servo_pin);
+  servo1_pos = 1500;
+  servo1.writeMicroseconds(servo1_pos);
+  delay(500);
+  servo1.detach();
+  delay(5000);
+  servo1.attach(servo_pin);
+  servo1_pos = 1000;
+  servo1.writeMicroseconds(servo1_pos);
+  delay(500);
+  servo1.detach();
+  delay(5000);
+  servo1.attach(servo_pin);
+  servo1_pos = 2000;
+  servo1.writeMicroseconds(servo1_pos);
+  delay(500);
+  servo1.detach();
+  delay(5000);
+  servo1.attach(servo_pin);
+  
+  pinMode(trig1_pin, OUTPUT);
+  pinMode(trig2_pin, OUTPUT);
+  pinMode(echo1_pin, INPUT_PULLUP);
+  pinMode(echo2_pin, INPUT_PULLUP);
 
   attachInterrupt(digitalPinToInterrupt(encL_pinA), isrA, RISING);
   attachInterrupt(digitalPinToInterrupt(encR_pinA), isrB, RISING);
@@ -262,46 +296,48 @@ void SendSerial()
 void loop()
 {
   load_ISR_values();
-  stepsL = prot_step_countL;
-  stepsR = prot_step_countR;
+  // stepsL = prot_step_countL;
+  // stepsR = prot_step_countR;
 
-  if ((stepsL > desired_stepsL + 1) || (stepsL < desired_stepsR - 1))
-    stepL_PID.Compute();
-  else
-  {
-    stepL_PID_output = 0;
-  }
+  // if ((stepsL > desired_stepsL + 1) || (stepsL < desired_stepsR - 1))
+  //   stepL_PID.Compute();
+  // else
+  // {
+  //   stepL_PID_output = 0;
+  // }
 
-  if ((stepsR > desired_stepsR + 1) || (stepsR < desired_stepsR - 1))
-    stepR_PID.Compute();
-  else
-  {
-    stepR_PID_output = 0;
-  }
+  // if ((stepsR > desired_stepsR + 1) || (stepsR < desired_stepsR - 1))
+  //   stepR_PID.Compute();
+  // else
+  // {
+  //   stepR_PID_output = 0;
+  // }
 
-  desired_RPM_L = 60;
-  desired_RPM_R = 60;
+  // desired_RPM_L = 60;
+  // desired_RPM_R = 60;
 
 
-  if ((desired_RPM_L > 1) || (desired_RPM_L < -1))
-    RPM_L_PID.Compute();
-  else
-  {
-    RPM_L_PID_output = 0;
-  }
+  // if ((desired_RPM_L > 1) || (desired_RPM_L < -1))
+  //   RPM_L_PID.Compute();
+  // else
+  // {
+  //   RPM_L_PID_output = 0;
+  // }
 
-  if ((desired_RPM_R > 1) || (desired_RPM_R < -1))
-    RPM_R_PID.Compute();
-  else
-  {
-    RPM_R_PID_output = 0;
-  }
+  // if ((desired_RPM_R > 1) || (desired_RPM_R < -1))
+  //   RPM_R_PID.Compute();
+  // else
+  // {
+  //   RPM_R_PID_output = 0;
+  // }
 
-  RPM_L_PID.Compute();
-  RPM_R_PID.Compute();
+  // RPM_L_PID.Compute();
+  // RPM_R_PID.Compute();
 
-  motorL(RPM_L_PID_output);
-  motorR(RPM_R_PID_output);
+  // motorL(RPM_L_PID_output);
+  // motorR(RPM_R_PID_output);
+
+  analogWrite(8, 255);
 
   SendSerial();
 }
