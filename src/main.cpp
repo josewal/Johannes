@@ -1,5 +1,24 @@
 #include <Arduino.h>
 #include <PID_v1.h>
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+RF24 radio(49, 48);   // nRF24L01 (CE, CSN)
+const byte address[6] = "00001";
+unsigned long lastReceiveTime = 0;
+unsigned long currentTime = 0;
+// Max size of this struct is 32 bytes - NRF24L01 buffer limit
+struct Data_Package {
+  byte j1PotX;
+  byte j1PotY;
+  byte j1Button;
+  byte j2PotX;
+  byte j2PotY;
+  byte j2Button;
+  byte Switch;
+};
+Data_Package data; //Create a variable with the above structure
 
 #define motorA 6
 #define motorA1 30
@@ -58,6 +77,8 @@ PID stepR_PID(&stepsR, &stepR_PID_output, &desired_stepsR, stepRKp, stepRKi, ste
 int motorL_pwm;
 int motorR_pwm;
 
+void resetData();
+
 void setup()
 {
   Serial.begin(9600);
@@ -102,6 +123,14 @@ void setup()
   stepR_PID.SetOutputLimits(-150, 150);
   stepR_PID.SetSampleTime(50);
   stepR_PID.SetMode(AUTOMATIC);
+
+  radio.begin();
+  radio.openReadingPipe(0, address);
+  radio.setAutoAck(false);
+  radio.setDataRate(RF24_1MBPS);
+  radio.setPALevel(RF24_PA_LOW);
+  radio.startListening(); //  Set the module as receiver
+  resetData();
 }
 
 void motorL(int velocity)
@@ -229,7 +258,42 @@ void load_ISR_values()
   }
 }
 
-void SendSerial()
+
+void radio_debugg(){  
+    Serial.print("LX ");
+    Serial.print(data.j1PotX);
+    Serial.print(", LY ");
+    Serial.print(data.j1PotY);
+    Serial.print(", LBut ");
+    Serial.print(data.j1Button);
+    Serial.print(", RX ");
+    Serial.print(data.j2PotX);
+    Serial.print(", RY ");
+    Serial.print(data.j2PotY);
+    Serial.print(", RBut ");
+    Serial.print(data.j2Button);
+    Serial.print(", SW ");
+    Serial.println(data.Switch);
+}
+
+void recieve_data(){
+  // Check whether we keep receving data, or we have a connection between the two modules
+  currentTime = millis();
+  if ( currentTime - lastReceiveTime > 1000 ) { // If current time is more then 1 second since we have recived the last data, that means we have lost connection
+    resetData(); // If connection is lost, reset the data. It prevents unwanted behavior, for example if a drone jas a throttle up, if we lose connection it can keep flying away if we dont reset the function
+  }
+  // Check whether there is data to be received
+  if (radio.available()) {
+    radio.read(&data, sizeof(Data_Package)); // Read the whole data and store it into the 'data' structure
+    lastReceiveTime = millis(); // At this moment we have received the data
+    radio_debugg();
+  }
+
+  desired_RPM_L = map(data.j1PotY, 0, 255, -150, 150);
+  desired_RPM_R = map(data.j2PotY, 0, 255, -150, 150);
+}
+
+void PID_debugg()
 {
   Serial.print(desired_stepsL - stepsL); //STEP LEFT COUNT ERROR
   Serial.print(",");
@@ -262,6 +326,9 @@ void SendSerial()
 void loop()
 {
   load_ISR_values();
+
+  recieve_data();
+
   stepsL = prot_step_countL;
   stepsR = prot_step_countR;
 
@@ -279,8 +346,8 @@ void loop()
     stepR_PID_output = 0;
   }
 
-  desired_RPM_L = 60;
-  desired_RPM_R = 60;
+  // desired_RPM_L = 60;
+  // desired_RPM_R = 60;
 
 
   if ((desired_RPM_L > 1) || (desired_RPM_L < -1))
@@ -302,6 +369,14 @@ void loop()
 
   motorL(RPM_L_PID_output);
   motorR(RPM_R_PID_output);
+}
 
-  SendSerial();
+void resetData() {
+  data.j1PotX = 127;
+  data.j1PotY = 127;
+  data.j2PotX = 127;
+  data.j2PotY = 127;
+  data.j1Button = 1;
+  data.j2Button = 1;
+  data.Switch = 0;
 }
