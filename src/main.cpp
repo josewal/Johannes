@@ -17,6 +17,12 @@ struct Data_Package {
   byte j2PotY;
   byte j2Button;
   byte Switch;
+  float rec_lKp;
+  float rec_lKi;
+  float rec_lKd;
+  float rec_rKp;
+  float rec_rKi;
+  float rec_rKd;
 };
 Data_Package data; //Create a variable with the above structure
 
@@ -127,7 +133,7 @@ void setup()
   radio.begin();
   radio.openReadingPipe(0, address);
   radio.setAutoAck(false);
-  radio.setDataRate(RF24_1MBPS);
+  radio.setDataRate(RF24_2MBPS);
   radio.setPALevel(RF24_PA_LOW);
   radio.startListening(); //  Set the module as receiver
   resetData();
@@ -273,7 +279,13 @@ void radio_debugg(){
     Serial.print(", RBut ");
     Serial.print(data.j2Button);
     Serial.print(", SW ");
-    Serial.println(data.Switch);
+    Serial.print(data.Switch);
+    Serial.print(", lKp ");
+    Serial.print(data.rec_lKp);
+    Serial.print(", lKi ");
+    Serial.print(data.rec_lKi);
+    Serial.print(", lKd ");
+    Serial.println(data.rec_lKd);
 }
 
 void recieve_data(){
@@ -286,11 +298,28 @@ void recieve_data(){
   if (radio.available()) {
     radio.read(&data, sizeof(Data_Package)); // Read the whole data and store it into the 'data' structure
     lastReceiveTime = millis(); // At this moment we have received the data
-    radio_debugg();
+    // radio_debugg();
   }
 
-  desired_RPM_L = map(data.j1PotY, 0, 255, -150, 150);
-  desired_RPM_R = map(data.j2PotY, 0, 255, -150, 150);
+  RPM_L_PID.SetTunings(data.rec_lKp, data.rec_lKi, data.rec_rKd);
+  RPM_R_PID.SetTunings(data.rec_lKp, data.rec_lKi, data.rec_rKd);
+
+  if (132 > data.j1PotY && data.j1PotY > 122)
+  {
+    desired_RPM_L = 0;
+    desired_RPM_R = 0;
+  } else
+  {
+    desired_RPM_L = map(data.j1PotY, 0, 255, -150, 150);
+    desired_RPM_R = map(data.j1PotY, 0, 255, -150, 150);
+  }
+
+  
+  float balancer = map(data.j2PotX, 0, 255, -2, 2);
+
+  desired_RPM_L += desired_RPM_L * balancer;
+  desired_RPM_R += desired_RPM_R * (-balancer);
+ 
 }
 
 void PID_debugg()
