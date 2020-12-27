@@ -31,8 +31,8 @@ Data_Package data; //Create a variable with the above structure
 #define motorA2 28
 
 #define motorB 7
-#define motorB1 24
-#define motorB2 26
+#define motorB1 26
+#define motorB2 24
 
 #define encL_pinA 3 //outputA digital pin2
 #define encL_pinB 5 //outoutB digital pin3
@@ -398,6 +398,8 @@ void loop()
 
   motorL(RPM_L_PID_output);
   motorR(RPM_R_PID_output);
+
+  PID_debugg();
 }
 
 void resetData() {
