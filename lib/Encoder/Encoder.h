@@ -17,26 +17,31 @@ private:
     int B_PORT;
     int B_REG;
 
-    volatile int dir;
+    int DIR_PARAMETER;
 
     volatile int step_count;
     volatile long step_time;
     volatile unsigned long prev_time;
 
 public:
-    int protected_dir;
     int protected_step_count;
     long protected_step_time;
-    int RPM;
+    float rpm;
 
     //METHODS DECLARATION
 private:
-public:
-    Encoder(int a_pin, int a_port, int a_reg, int b_pin, int b_port, int b_reg);
-    void begin();
-    void getData();
     void ISR_ROUTINE0(void);
     void ISR_ROUTINE1(void);
+    void getData();
+    void calculateRPM();
+
+public:
+    Encoder();
+    Encoder(int a_pin, int a_port, int a_reg, int b_pin, int b_port, int b_reg);
+    void begin();
+    void setDirection(int dir);
+    
+    void update();
 };
 
 #endif

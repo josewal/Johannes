@@ -1,5 +1,6 @@
 #include <Motor.h>
 
+Motor::Motor() {}
 Motor::Motor(int pwm_pin, int dir_a_pin, int dir_b_pin, int min_pwm = 0, int max_pwm = 255)
 {
     PWM_PIN = pwm_pin;

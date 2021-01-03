@@ -12,6 +12,8 @@ void Encoder::InterruptHandler1()
         Encoder::instances[1]->ISR_ROUTINE1();
 } // end of myClass::switchPressedExt1
 
+Encoder::Encoder() {}
+
 Encoder::Encoder(int a_pin, int a_port, int a_reg, int b_pin, int b_port, int b_reg)
 {
     A_PIN = a_pin;
@@ -20,7 +22,6 @@ Encoder::Encoder(int a_pin, int a_port, int a_reg, int b_pin, int b_port, int b_
     B_PIN = b_pin;
     B_PORT = 3;
     B_REG = 0x0C;
-
 }
 
 void Encoder::begin()
@@ -52,36 +53,46 @@ void Encoder::getData()
         prev_time = micros();
     }
 
-    protected_dir = dir;
     protected_step_count = step_count;
     protected_step_time = constrain(step_time, -100000, 100000);
 
     interrupts();
+}
 
+void Encoder::calculateRPM()
+{
     if (protected_step_time < 100000)
     {
-        RPM = protected_dir * 60000000 / (75 * protected_step_time);
+        rpm = 60000000 / (75 * protected_step_time);
     }
     else
     {
-        RPM = 0;
+        rpm = 0;
     }
+}
+
+void Encoder::update(){
+    Encoder::getData();
+    Encoder::calculateRPM();
+}
+
+void Encoder::setDirection(int dir)
+{
+    DIR_PARAMETER = dir;
 }
 
 void Encoder::ISR_ROUTINE0()
 {
-    if (bitRead(PINE, 3) == HIGH)
+    if (bitRead(PINE, 3) == DIR_PARAMETER)
     {
-        step_count ++; 
+        step_count++;
         step_time = (micros() - prev_time);
-        dir = 1;
     }
 
     else
     {
         step_count--;
-        step_time = (micros() - prev_time);
-        dir = -1;
+        step_time = -(micros() - prev_time);
     }
 
     prev_time = micros();
@@ -89,18 +100,16 @@ void Encoder::ISR_ROUTINE0()
 
 void Encoder::ISR_ROUTINE1()
 {
-    if (bitRead(PING, 5) == HIGH)
+    if (bitRead(PING, 5) == DIR_PARAMETER)
     {
-        step_count ++; 
+        step_count++;
         step_time = (micros() - prev_time);
-        dir = 1;
     }
 
     else
     {
         step_count--;
-        step_time = (micros() - prev_time);
-        dir = -1;
+        step_time = -(micros() - prev_time);
     }
 
     prev_time = micros();
