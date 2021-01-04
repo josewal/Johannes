@@ -36,7 +36,6 @@ public:
 
     void moveRPM(int rpm, int t = 0, int acl = 0, int dcl = 0);
 
-
 };
 
 #endif

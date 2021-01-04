@@ -1,5 +1,5 @@
 #include <Encoder.h>
-
+ 
 void Encoder::InterruptHandler0()
 {
     if (Encoder::instances[0] != NULL)

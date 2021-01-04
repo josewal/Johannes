@@ -1,5 +1,5 @@
 #include <Motor.h>
-
+ 
 Motor::Motor() {}
 Motor::Motor(int pwm_pin, int dir_a_pin, int dir_b_pin, int min_pwm = 0, int max_pwm = 255)
 {
@@ -42,5 +42,4 @@ void Motor::drive(int velocity)
         digitalWrite(DIR_B_PIN, LOW);
     }
 }
-
 ;
