@@ -9,6 +9,8 @@
 #include <Encoder.h>
 #include <MotorController.h>
 #include <Sonar.h>
+#include <HeadServo.h>
+#include <Organ.h>
 
 Motor motorLeft(6, 30, 28, 30);
 Motor motorRight(7, 26, 24, 30);
@@ -20,20 +22,18 @@ Encoder encoderRight(2, 4, PINE, 4, 5, PING);
 MotorController controllerLeft(motorLeft, encoderLeft);
 MotorController controllerRight(motorRight, encoderRight);
 
+HeadServo servo(10, 0, 180);
+
 Sonar *Sonar::instance = NULL;
 Sonar sonar(21, 34, 50);
 
-Servo sonar_servo;
-int angle = 90;
-int angleToReach = 100;
-
-float distance = 0;
-float min_dist = 999;
-int min_dist_angle = 0;
-int obstacle_angle = 0;
+Organ head(servo, sonar);
 
 void setup()
 {
+  head.servo.begin(50, 100);
+  head.sonar.begin();
+
   Serial.begin(9600);
 
   controllerLeft.setup(1);
@@ -42,67 +42,58 @@ void setup()
   controllerLeft.rpm_PID_setup(6, 1, 0, 255);
   controllerRight.rpm_PID_setup(6, 1, 0, 255);
 
-  sonar.begin();
-
-  sonar_servo.attach(10);
-}
-
-void sweep(int step = 1, int range = 20)
-{
-  if (angle < angleToReach)
-  {
-    angle = min(180, angle + step);
-    sonar_servo.write(angle);
-    if (angleToReach - angle < step)
-    {
-      int diffAngle = angleToReach - min_dist_angle;
-      if (diffAngle < range / 2)
-      {
-        angleToReach = min(180, min_dist_angle + range / 2);
-        min_dist = 999;
-      }
-      else
-      {
-        angleToReach = max(0, min_dist_angle - range / 2);
-        obstacle_angle = min_dist_angle;
-      }
-    }
-  }
-  else if (angle >= angleToReach)
-  {
-    angle = max(0, angle - step);
-    sonar_servo.write(angle);
-    if (angle - angleToReach < step)
-    {
-      int diffAngle = min_dist_angle - angleToReach;
-      if (diffAngle < range / 2)
-      {
-        angleToReach = max(range / 2, min_dist_angle - range / 2);
-        obstacle_angle = min_dist_angle;
-      }
-      else
-      {
-        angleToReach = min(180 - (range / 2), min_dist_angle + range / 2);
-        min_dist = 999;
-      }
-    }
-  }
+  head.scan(10, 20, 160);
 }
 
 void loop()
 {
   controllerLeft.update();
   controllerRight.update();
-  sonar.update();
+  head.update();
 
-  distance = sonar.getDistance();
-  if (distance < min_dist)
+  if (head.distance < 50)
   {
-    min_dist = distance;
-    min_dist_angle = angle;
+    if (head.angle_pinged_at <= 90)
+    {
+      controllerLeft.moveRPM(40);
+      controllerRight.moveRPM(0);
+    }
+    else
+    {
+      controllerLeft.moveRPM(0);
+      controllerRight.moveRPM(40);
+    }
   }
-  Serial.println(min_dist_angle);
-  sweep(2, 180);
+  else
+  {
+    if (head.distance > 200)
+    {
+      if (head.angle_pinged_at <= 90)
+      {
+        controllerLeft.moveRPM(0);
+        controllerRight.moveRPM(40);
+      }
+      else
+      {
+        controllerLeft.moveRPM(40);
+        controllerRight.moveRPM(0);
+      }
+    }
+    else
+    {
+      controllerLeft.moveRPM(30);
+      controllerRight.moveRPM(30);
+    }
+  }
 
-  delay(100);
+  if (head.scan_done)
+  {
+    Serial.println();
+    Serial.print("Min dist: ");
+    Serial.print(head.min_dist);
+    Serial.print(" at angle: ");
+    Serial.println(head.min_dist_angle);
+    Serial.println();
+    head.scan(head.scan_step, head.scan_end, head.scan_start);
+  }
 }

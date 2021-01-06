@@ -2,15 +2,19 @@
 
 void Sonar::InterruptHandler()
 {
-    Sonar::instance->ISR_ROUTINE();
+    if(Sonar::instance!=NULL){
+        Sonar::instance->ISR_ROUTINE();
+    }
 }
 
+Sonar::Sonar() {
+}
 Sonar::Sonar(int echo_pin, int trig_pin, unsigned int sampling_rate = 100)
 {
+
     ECHO_PIN = echo_pin;
     TRIG_PIN = trig_pin;
     SAMPLING_RATE = sampling_rate;
-    instance = this;
 }
 
 void Sonar::begin(boolean enable = true)
@@ -20,12 +24,12 @@ void Sonar::begin(boolean enable = true)
     digitalWrite(TRIG_PIN, LOW);
 
     attachInterrupt(digitalPinToInterrupt(ECHO_PIN), InterruptHandler, CHANGE);
+    instance = this;
     enabled = false;
     if (enable)
     {
         Sonar::enable();
     }
-
 }
 
 void Sonar::enable()
@@ -42,7 +46,7 @@ void Sonar::enable()
     last_ping_time = millis();
     distance = 999;
 
-    listen = true;
+    listen = false;
     enabled = true;
 }
 
@@ -50,6 +54,11 @@ void Sonar::disable()
 {
     listen = false;
     enabled = false;
+}
+
+void Sonar::reset(){
+    disable();
+    enable();
 }
 
 void Sonar::setSampleRate(unsigned int interval)
@@ -62,34 +71,20 @@ float Sonar::getDistance()
     return distance;
 }
 
-void Sonar::update()
+boolean Sonar::readyToPing()
 {
-    if (!enabled)
-    {
-        Serial.print("Not enabled");
-        return;
-    }
+    // Serial.print("Am I Ready: ");
+    // Serial.print("\t");
 
-    if (!last_ping_resolved)
-    {
-        Sonar::calculateDist();
-        last_ping_resolved = true;
-        
-    }
-
-    if (Sonar::readyToPing())
-    {
-        Sonar::ping();
-    }
-}
-
-boolean Sonar::readyToPing(){
     boolean time_elapsed = millis() - last_ping_time > SAMPLING_RATE;
+    // Serial.println(last_ping_resolved && time_elapsed);
     return last_ping_resolved && time_elapsed;
+
 }
 
 void Sonar::calculateDist()
 {
+    // Serial.println("Calculated dist ");
     duration = pullLow_time - pullUp_time;
     pullUp_time = 0;
     pullLow_time = 0;
@@ -102,10 +97,12 @@ void Sonar::calculateDist()
     {
         distance = 999;
     }
+    last_ping_resolved = true;
 }
 
 void Sonar::ping()
 {
+    // Serial.println("Pinged ");
     listen = true;
     last_ping_time = millis();
 

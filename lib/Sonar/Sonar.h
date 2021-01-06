@@ -17,23 +17,24 @@ private:
     volatile unsigned long pullUp_time;
     volatile unsigned long pullLow_time;
 
-    volatile boolean listen;
-    boolean last_ping_resolved;
-
     unsigned long last_ping_time;
 
-    const double SP_OF_SOUND = 0.0343;
+    double SP_OF_SOUND = 0.0343;
     unsigned long duration = 0;
     float distance;
 
     boolean enabled;
 
-private:
-    void ISR_ROUTINE(void);
-    void ping();
-    void calculateDist();
 
 public:
+    volatile boolean listen;
+    boolean last_ping_resolved;
+
+private:
+    void ISR_ROUTINE(void);
+
+public:
+    Sonar();
     Sonar(int echo_pin, int trig_pin, unsigned int sampling_rate = 100);
     void begin(boolean enable = true);
     void enable();
@@ -41,6 +42,9 @@ public:
     void setSampleRate(unsigned int interval);
     void update();
     boolean readyToPing();
+    void reset();
+    void ping();
+    void calculateDist();
     float getDistance();
 };
 
