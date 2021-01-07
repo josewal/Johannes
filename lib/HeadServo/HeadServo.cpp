@@ -51,8 +51,6 @@ void HeadServo::update()
       {
         servoStep(1);
       }
-      
-      
     }
   }
 

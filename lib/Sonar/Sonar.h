@@ -28,7 +28,7 @@ private:
 
 public:
     volatile boolean listen;
-    boolean last_ping_resolved;
+    boolean got_echo;
 
 private:
     void ISR_ROUTINE(void);

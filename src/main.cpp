@@ -31,7 +31,7 @@ Organ head(servo, sonar);
 
 void setup()
 {
-  head.servo.begin(50, 100);
+  head.servo.begin(50, 0);
   head.sonar.begin();
 
   Serial.begin(9600);
@@ -91,7 +91,7 @@ void loop()
 
   head.update();
 
-  if (head.scan_done)
+  if (head.state == -1)
   {
     Serial.println();
     Serial.print("Min dist: ");
@@ -99,7 +99,7 @@ void loop()
     Serial.print(" at angle: ");
     Serial.println(head.min_dist_angle);
     Serial.println();
-    head.setScan(head.scan_step, head.scan_end, head.scan_start);
+    head.setScan(0, head.min_dist_angle);
   }
 
   // if (head.state == -1){

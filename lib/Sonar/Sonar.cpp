@@ -44,10 +44,10 @@ void Sonar::enable()
     pullUp_time = 0;
     pullLow_time = 0;
 
-    last_ping_resolved = true;
     last_ping_time = millis();
     distance = 999;
 
+    got_echo = false;
     listen = false;
     enabled = true;
 }
@@ -80,8 +80,8 @@ boolean Sonar::readyToPing()
     // Serial.print("\t");
 
     boolean time_elapsed = millis() - last_ping_time > SAMPLING_RATE;
-    // Serial.println(last_ping_resolved && time_elapsed);
-    return last_ping_resolved && time_elapsed;
+    // Serial.println(got_echo && time_elapsed);
+    return !got_echo && time_elapsed;
 }
 
 void Sonar::calculateDist()
@@ -99,7 +99,7 @@ void Sonar::calculateDist()
     {
         distance = 999;
     }
-    last_ping_resolved = true;
+    got_echo = false;
 }
 
 void Sonar::ping()
@@ -115,11 +115,11 @@ void Sonar::ping()
 
 void Sonar::discardPing()
 {
-    if (!listen)
+    if (!listen && got_echo)
     {
         pullUp_time = 0;
         pullLow_time = 0;
-        last_ping_resolved = true;
+        got_echo = false;
     }
 }
 
@@ -137,7 +137,7 @@ void Sonar::ISR_ROUTINE(void)
     else
     {
         pullLow_time = micros();
-        last_ping_resolved = false;
+        got_echo = true;
         listen = false;
     }
 }
