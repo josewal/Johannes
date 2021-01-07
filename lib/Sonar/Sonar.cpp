@@ -2,12 +2,14 @@
 
 void Sonar::InterruptHandler()
 {
-    if(Sonar::instance!=NULL){
+    if (Sonar::instance != NULL)
+    {
         Sonar::instance->ISR_ROUTINE();
     }
 }
 
-Sonar::Sonar() {
+Sonar::Sonar()
+{
 }
 Sonar::Sonar(int echo_pin, int trig_pin, unsigned int sampling_rate = 100)
 {
@@ -56,7 +58,8 @@ void Sonar::disable()
     enabled = false;
 }
 
-void Sonar::reset(){
+void Sonar::reset()
+{
     disable();
     enable();
 }
@@ -79,7 +82,6 @@ boolean Sonar::readyToPing()
     boolean time_elapsed = millis() - last_ping_time > SAMPLING_RATE;
     // Serial.println(last_ping_resolved && time_elapsed);
     return last_ping_resolved && time_elapsed;
-
 }
 
 void Sonar::calculateDist()
@@ -109,6 +111,16 @@ void Sonar::ping()
     digitalWrite(TRIG_PIN, HIGH);
     delayMicroseconds(10);
     digitalWrite(TRIG_PIN, LOW);
+}
+
+void Sonar::discardPing()
+{
+    if (!listen)
+    {
+        pullUp_time = 0;
+        pullLow_time = 0;
+        last_ping_resolved = true;
+    }
 }
 
 void Sonar::ISR_ROUTINE(void)

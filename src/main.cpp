@@ -42,14 +42,11 @@ void setup()
   controllerLeft.rpm_PID_setup(6, 1, 0, 255);
   controllerRight.rpm_PID_setup(6, 1, 0, 255);
 
-  head.scan(10, 20, 160);
+  head.setScan(10, 20, 160);
 }
 
-void loop()
+void drive()
 {
-  controllerLeft.update();
-  controllerRight.update();
-  head.update();
 
   if (head.distance < 50)
   {
@@ -85,6 +82,14 @@ void loop()
       controllerRight.moveRPM(30);
     }
   }
+}
+
+void loop()
+{
+  controllerLeft.update();
+  controllerRight.update();
+
+  head.update();
 
   if (head.scan_done)
   {
@@ -94,6 +99,11 @@ void loop()
     Serial.print(" at angle: ");
     Serial.println(head.min_dist_angle);
     Serial.println();
-    head.scan(head.scan_step, head.scan_end, head.scan_start);
+    head.setScan(head.scan_step, head.scan_end, head.scan_start);
   }
+
+  // if (head.state == -1){
+  //   head.pingAt(90);
+  //   Serial.println(head.distance);
+  // }
 }

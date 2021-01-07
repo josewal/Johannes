@@ -22,16 +22,28 @@ public:
     unsigned int scan_end;
     unsigned int scan_step;
 
+    int pingCycle = -1;
+    int state = -1;
+    /* states:
+    -1 off
+    1 pinging at
+    2 scanning
+    */
+
     HeadServo servo;
     Sonar sonar;
 
     boolean scan_done = true;
-    boolean ping_needed;
+    boolean ping_needed = false;
+    boolean ping_expected = false;
 
     Organ(HeadServo _servo, Sonar _sonar);
     void begin();
     void update();
-    void scan(int step, int from, int to);
+
+    void pingAt(int angle, int n_pings = -1, int interval = -1);
+    void setScan(int step, int from, int to);
+    void scan();
 };
 
 #endif

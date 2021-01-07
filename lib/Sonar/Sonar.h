@@ -46,6 +46,7 @@ public:
     void ping();
     void calculateDist();
     float getDistance();
+    void discardPing();
 };
 
 #endif
