@@ -45,13 +45,45 @@ void MotorController::steps_PID_setup(double Kp, double Ki, double Kd, int limit
 void MotorController::update()
 {
     encoder.update();
-    rpm_input = encoder.rpm;
-    steps_input = encoder.protected_step_count;
 
-    steps_PID.Compute();
-    rpm_PID.Compute();
+    switch (state)
+    {
+    case 1:
+        rpm_input = encoder.rpm;
+        rpm_PID.Compute();
+
+        break;
+
+    case 2:
+        rpm_input = encoder.rpm;
+        steps_input = encoder.protected_step_count;
+        steps_PID.Compute();
+
+        rpm_setpoint = steps_PID_output;
+        rpm_PID.Compute();
+        isSettled();
+
+        break;
+
+    default:
+        break;
+    }
 
     motor.drive(rpm_PID_output);
+}
+
+boolean MotorController::isSettled(){
+    int error = abs(steps_setpoint - steps_input);
+    if (error > 3){
+        last_time_moved = millis();
+    } else
+    {
+        if (SETTLING_TIME < millis() - last_time_moved){
+            moveRPM(0);
+            return true;
+        }   
+    }
+    return false;
 }
 
 void MotorController::rpm_Control(int desired_rpm)
@@ -69,4 +101,11 @@ void MotorController::step_Control(int desired_steps)
 void MotorController::moveRPM(int rpm, int t = 0, int acl = 0, int dcl = 0)
 {
     rpm_setpoint = rpm;
+    state = 1;
+}
+
+void MotorController::moveCM(int cm)
+{
+    steps_setpoint = steps_setpoint + 75 * cm / WHEEL_DIAMETER;
+    state = 2;
 }
