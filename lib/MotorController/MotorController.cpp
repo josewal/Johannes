@@ -80,6 +80,7 @@ boolean MotorController::isSettled(){
     {
         if (SETTLING_TIME < millis() - last_time_moved){
             moveRPM(0);
+            rotated = true;
             return true;
         }   
     }

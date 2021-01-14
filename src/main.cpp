@@ -14,6 +14,8 @@
 
 Motor motorLeft(6, 30, 28, 30);
 Motor motorRight(7, 26, 24, 30);
+const float WHEEL_SPREAD = 17;
+float WHEEL_SPREAD_CIRC;
 
 Encoder *Encoder::instances[2] = {NULL, NULL};
 Encoder encoderLeft(3, 5, PINE, 5, 3, PINE);
@@ -29,6 +31,12 @@ Sonar sonar(21, 34, 50);
 
 Organ head(servo, sonar);
 
+int angle = 0;
+int prev_anle = 0;
+
+boolean movedL = false;
+boolean movedR = false;
+
 void setup()
 {
   head.servo.begin(50, 0);
@@ -38,11 +46,15 @@ void setup()
 
   controllerLeft.setup(1);
   controllerRight.setup(0);
+  WHEEL_SPREAD_CIRC = WHEEL_SPREAD * PI;
 
   controllerLeft.rpm_PID_setup(6, 1, 0, 255);
   controllerRight.rpm_PID_setup(6, 1, 0, 255);
 
-  head.setScan(10, 20, 160);
+  controllerLeft.steps_PID_setup(3, 2, 0, 70);
+  controllerRight.steps_PID_setup(3, 2, 0, 70);
+
+  head.setScan(10, 0, 180);
 }
 
 void drive()
@@ -84,6 +96,16 @@ void drive()
   }
 }
 
+void rotate(float _angle)
+{
+  float dist = _angle / 360 * WHEEL_SPREAD_CIRC;
+
+  controllerLeft.moveCM(dist);
+  controllerLeft.rotated = false;
+  controllerRight.moveCM(-dist);
+  controllerRight.rotated = true;
+}
+
 void loop()
 {
   controllerLeft.update();
@@ -93,17 +115,33 @@ void loop()
 
   if (head.state == -1)
   {
-    Serial.println();
-    Serial.print("Min dist: ");
-    Serial.print(head.min_dist);
-    Serial.print(" at angle: ");
-    Serial.println(head.min_dist_angle);
-    Serial.println();
-    head.setScan(0, head.min_dist_angle);
+    if (head.max_dist_angle != -1)
+    {
+      angle = angle + head.max_dist_angle - 90;
+      rotate(head.max_dist_angle - 90);
+      head.max_dist_angle = -1;
+    }
+    else
+    {
+      if (controllerLeft.rotated && controllerLeft.rotated)
+      {
+        if (movedL && movedR)
+        {
+          if (controllerLeft.isSettled() && controllerRight.isSettled())
+          {
+            head.setScan(10, 0, 180);
+            movedL = false;
+            movedR = false;
+          }
+        }
+        else
+        {
+          controllerLeft.moveCM(min(100,head.max_dist - 20));
+          controllerRight.moveCM(min(100,head.max_dist - 20));
+          movedL = true;
+          movedR = true;
+        }
+      }
+    }
   }
-
-  // if (head.state == -1){
-  //   head.pingAt(90);
-  //   Serial.println(head.distance);
-  // }
 }

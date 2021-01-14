@@ -18,8 +18,8 @@ void Organ::update()
     {
     case 0:
         //STATE COMMANDER
-
         break;
+        
     case 1:
         //SENDING PING
         if (sonar.readyToPing() && servo.isSettled())
@@ -106,5 +106,7 @@ void Organ::setScan(int step, int from, int to = 0)
 
     min_dist = 999;
     min_dist_angle = 0;
+    max_dist = 0;
+    max_dist_angle = 0;
     distance = 999;
 }

@@ -38,8 +38,10 @@ public:
     MotorController(Motor mtr, Encoder enc);
     void setup(int dir = 1);
 
+    boolean rotated = true;
     boolean isSettled();
     
+    void rotate(float _n_rotations);
 
     void rpm_PID_setup(double Kp, double Ki, double Kd, int limits = 255);
     void steps_PID_setup(double Kp, double Ki, double Kd, int limits = 255);
