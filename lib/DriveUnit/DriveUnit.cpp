@@ -1,7 +1,6 @@
 #include <DriveUnit.h>
 
-
- DriveUnit::DriveUnit(MotorController& leftController, MotorController& rightController) : leftController(leftController),rightController(rightController)
+DriveUnit::DriveUnit(MotorController &leftController, MotorController &rightController) : leftController(leftController), rightController(rightController)
 {
 }
 
@@ -13,49 +12,74 @@ void DriveUnit::update()
     hasRotated();
 }
 
+void DriveUnit::stop()
+{
+    leftController.stop();
+    rightController.stop();
+    Serial.println("stopped");
+}
+
 boolean DriveUnit::hasArrived()
 {
-    if (!rotationDone && leftController.isSettled() && rightController.isSettled())
+
+    if (!arrived)
     {
-        dist = dist_to_reach;
-        arrived = true;
+        if (leftController.settled && leftController.settled)
+        {
+            dist = dist_to_reach;
+            arrived = true;
+            stop();
+        }
+        else
+        {
+            arrived = false;
+        }
     }
     else
     {
-        arrived = false;
+        arrived = true;
     }
+
     return arrived;
 }
 
 boolean DriveUnit::hasRotated()
 {
-    if (!rotationDone && leftController.isSettled() && rightController.isSettled())
+
+    if (!rotationDone)
     {
-        angle = angle_to_reach;
-        rotationDone = true;
+        if (leftController.settled && rightController.settled)
+        {
+            rotationDone = true;
+            stop();
+        }
+        else
+        {
+            rotationDone = false;
+        }
     }
-    else
-    {
-        rotationDone = false;
-    }
+
     return rotationDone;
 }
 
 void DriveUnit::driveCM(int _cm)
 {
     arrived = false;
-    dist_to_reach = _cm;
+    dist_to_reach = dist + _cm;
 
-    leftController.moveCM(dist_to_reach);
-    rightController.moveCM(dist_to_reach);
+    leftController.moveCM(_cm);
+    rightController.moveCM(_cm);
 }
 
-void DriveUnit::rotateTo(int _angle)
+void DriveUnit::rotateTo(float _angle)
 {
     rotationDone = false;
-    angle_to_reach = _angle;
-    float dist = _angle / 360 * WHEEL_SPREAD_CIRC;
+    float _dist = (_angle / 360) * WHEEL_SPREAD_CIRC;
+    leftController.moveCM(_dist);
+    rightController.moveCM(-_dist);
+}
 
-    leftController.moveCM(dist);
-    rightController.moveCM(-dist);
+void DriveUnit::rotateBy(float _angle)
+{
+    rotateTo(_angle);
 }

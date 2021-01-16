@@ -27,10 +27,11 @@ public:
     void update();
     boolean hasRotated();
     boolean hasArrived();
+    void stop();
     void driveCM(int _cm);
     void driveRPM(int _RPM);
-    void rotateBy(int _angle);
-    void rotateTo(int _anle);
+    void rotateBy(float _angle);
+    void rotateTo(float _angle);
 };
 
 #endif

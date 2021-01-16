@@ -17,14 +17,11 @@ private:
     double rpm_input, rpm_setpoint, rpm_PID_output;
     PID rpm_PID;
 
-    void step_Control(int desired_steps);
-    void rpm_Control(int desired_rpm);
-
     unsigned long cmd_start_log;
     unsigned long cmd_end_log;
 
     int SETTLING_TIME = 1000; //ms
-    int SETTLING_ERROR = 3;
+    int SETTLING_ERROR = 10;
     unsigned long last_time_moved = 0;
 
 protected:
@@ -36,6 +33,7 @@ public:
     float WHEEL_DIAMETER = 10.4 * PI; //cm
 
     int state;
+    boolean settled = true;
 
     MotorController::MotorController(Motor& , Encoder&);
     void setup(int dir = 1);
@@ -44,6 +42,7 @@ public:
     void rpm_PID_setup(double Kp, double Ki, double Kd, int limits = 255);
     void steps_PID_setup(double Kp, double Ki, double Kd, int limits = 255);
 
+    void stop(); 
     void moveRPM(int rpm, int t = 0, int acl = 0, int dcl = 0);
     void moveCM(int cm);
 

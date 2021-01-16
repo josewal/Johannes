@@ -13,7 +13,6 @@
 #include <Organ.h>
 #include <DriveUnit.h>
 
-
 Motor motorLeft(6, 30, 28, 30);
 Motor motorRight(7, 26, 24, 30);
 float WHEEL_SPREAD_CIRC;
@@ -22,17 +21,19 @@ Encoder *Encoder::instances[2] = {NULL, NULL};
 Encoder encoderLeft(3, 5, PINE, 5, 3, PINE);
 Encoder encoderRight(2, 4, PINE, 4, 5, PING);
 
-MotorController L_Controller(motorLeft, encoderLeft);
-MotorController R_Controller(motorRight, encoderRight);
+MotorController leftController(motorLeft, encoderLeft);
+MotorController rightController(motorRight, encoderRight);
 
-DriveUnit driver(L_Controller,R_Controller);
+DriveUnit driver(leftController, rightController);
 
 HeadServo servo(10, 0, 180);
 
 Sonar *Sonar::instance = NULL;
-Sonar sonar(21, 34, 50);
+Sonar sonar(21, 34, 200);
 
 Organ head(servo, sonar);
+
+int drive_seqeunce = -1;
 
 void setup()
 {
@@ -41,58 +42,54 @@ void setup()
 
   Serial.begin(9600);
 
+  leftController.setup(1);
+  rightController.setup(0);
 
-  L_Controller.setup(1);
-  R_Controller.setup(0);
-  
-  L_Controller.rpm_PID_setup(6, 1, 0, 255);
-  R_Controller.rpm_PID_setup(6, 1, 0, 255);
+  leftController.rpm_PID_setup(6, 1, 0, 255);
+  rightController.rpm_PID_setup(6, 1, 0, 255);
 
-  L_Controller.steps_PID_setup(3, 2, 0, 70);
-  R_Controller.steps_PID_setup(3, 2, 0, 70);
+  leftController.steps_PID_setup(4, 2, 0, 70);
+  rightController.steps_PID_setup(4, 2, 0, 70);
 
-  driver.driveCM(100);
+  head.setScan(10, 0, 180);
+  drive_seqeunce = 1;
 }
-
 
 void loop()
 {
-  
+
   driver.update();
   head.update();
 
-  Serial.println(driver.leftController.encoder.protected_step_count);
-  
-}
+  switch (drive_seqeunce)
+  {
+  case 1:
+    if (head.state == -1)
+    {
+      head.servo.setTarget(90);
+      driver.rotateBy(head.max_dist_angle - 90);
+      drive_seqeunce = 2;
+    }
+    break;
 
-// if (head.state == -1)
-//   {
-//     if (head.max_dist_angle != -1)
-//     {
-//       angle = angle + head.max_dist_angle - 90;
-//       rotate(head.max_dist_angle - 90);
-//       head.max_dist_angle = -1;
-//     }
-//     else
-//     {
-//       if (leftController.rotated && leftController.rotated)
-//       {
-//         if (movedL && movedR)
-//         {
-//           if (leftController.isSettled() && rightController.isSettled())
-//           {
-//             head.setScan(10, 0, 180);
-//             movedL = false;
-//             movedR = false;
-//           }
-//         }
-//         else
-//         {
-//           leftController.moveCM(min(100,head.max_dist - 20));
-//           rightController.moveCM(min(100,head.max_dist - 20));
-//           movedL = true;
-//           movedR = true;
-//         }
-//       }
-//     }
-//   }
+  case 2:
+    if (driver.rotationDone)
+    {
+      int dist = min(150, head.max_dist - 30);
+      driver.driveCM(dist);
+      drive_seqeunce = 3;
+    }
+    break;
+
+  case 3:
+    if (driver.arrived)
+    {
+      head.setScan(10, 0, 180);
+      drive_seqeunce = 1;
+    }
+    break;
+
+  default:
+    break;
+  }
+}
