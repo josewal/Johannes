@@ -1,6 +1,6 @@
 #include <MotorController.h>
 #include <PID_v1.h>
-
+MotorController::MotorController(){}
 MotorController::MotorController(Motor mtr, Encoder enc)
 {
     PID temp_rpm_PID(&rpm_input, &rpm_PID_output, &rpm_setpoint, 0, 0, 0, DIRECT);
@@ -74,13 +74,12 @@ void MotorController::update()
 
 boolean MotorController::isSettled(){
     int error = abs(steps_setpoint - steps_input);
-    if (error > 3){
+    if (error > SETTLING_ERROR){
         last_time_moved = millis();
     } else
     {
         if (SETTLING_TIME < millis() - last_time_moved){
             moveRPM(0);
-            rotated = true;
             return true;
         }   
     }

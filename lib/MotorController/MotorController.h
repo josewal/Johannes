@@ -23,7 +23,8 @@ private:
     unsigned long cmd_start_log;
     unsigned long cmd_end_log;
 
-    int SETTLING_TIME = 2000; //ms
+    int SETTLING_TIME = 1000; //ms
+    int SETTLING_ERROR = 3;
     unsigned long last_time_moved = 0;
 
 protected:
@@ -32,24 +33,22 @@ public:
     int motor_status;
     Encoder encoder;
 
-    float WHEEL_DIAMETER = 10.4*PI; //cm
+    float WHEEL_DIAMETER = 10.4 * PI; //cm
+
     int state;
 
+    MotorController();
     MotorController(Motor mtr, Encoder enc);
     void setup(int dir = 1);
-
-    boolean rotated = true;
-    boolean isSettled();
-    
-    void rotate(float _n_rotations);
+    void update();
 
     void rpm_PID_setup(double Kp, double Ki, double Kd, int limits = 255);
     void steps_PID_setup(double Kp, double Ki, double Kd, int limits = 255);
 
-    void update();
-
     void moveRPM(int rpm, int t = 0, int acl = 0, int dcl = 0);
     void moveCM(int cm);
+
+    boolean isSettled();
 };
 
 #endif
