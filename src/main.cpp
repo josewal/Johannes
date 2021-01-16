@@ -25,7 +25,7 @@ Encoder encoderRight(2, 4, PINE, 4, 5, PING);
 MotorController L_Controller(motorLeft, encoderLeft);
 MotorController R_Controller(motorRight, encoderRight);
 
-DriveUnit driver;
+DriveUnit driver(L_Controller,R_Controller);
 
 HeadServo servo(10, 0, 180);
 
@@ -51,7 +51,6 @@ void setup()
   L_Controller.steps_PID_setup(3, 2, 0, 70);
   R_Controller.steps_PID_setup(3, 2, 0, 70);
 
-  driver.setup(L_Controller, R_Controller);
   driver.driveCM(100);
 }
 

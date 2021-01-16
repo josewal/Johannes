@@ -1,7 +1,6 @@
 #include <MotorController.h>
 #include <PID_v1.h>
-MotorController::MotorController(){}
-MotorController::MotorController(Motor mtr, Encoder enc)
+MotorController::MotorController(Motor& mtr, Encoder& enc): motor(mtr), encoder(enc)
 {
     PID temp_rpm_PID(&rpm_input, &rpm_PID_output, &rpm_setpoint, 0, 0, 0, DIRECT);
     rpm_PID = temp_rpm_PID;
@@ -9,8 +8,6 @@ MotorController::MotorController(Motor mtr, Encoder enc)
     PID temp_steps_PID(&steps_input, &steps_PID_output, &steps_setpoint, 0, 0, 0, DIRECT);
     steps_PID = temp_steps_PID;
 
-    motor = mtr;
-    encoder = enc;
 }
 
 void MotorController::setup(int dir = 1)

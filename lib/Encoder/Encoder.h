@@ -36,7 +36,6 @@ private:
     void calculateRPM();
 
 public:
-    Encoder();
     Encoder(int a_pin, int a_port, int a_reg, int b_pin, int b_port, int b_reg);
     void begin();
     void setDirection(int dir);

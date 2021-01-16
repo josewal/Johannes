@@ -12,7 +12,6 @@ void Encoder::InterruptHandler1()
         Encoder::instances[1]->ISR_ROUTINE1();
 } // end of myClass::switchPressedExt1
 
-Encoder::Encoder() {}
 
 Encoder::Encoder(int a_pin, int a_port, int a_reg, int b_pin, int b_port, int b_reg)
 {

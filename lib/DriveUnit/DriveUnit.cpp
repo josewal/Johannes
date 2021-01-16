@@ -1,13 +1,8 @@
 #include <DriveUnit.h>
 
-DriveUnit::DriveUnit()
-{
-}
 
-void DriveUnit::setup(MotorController _left, MotorController _right)
+ DriveUnit::DriveUnit(MotorController& leftController, MotorController& rightController) : leftController(leftController),rightController(rightController)
 {
-    leftController = _left;
-    rightController = _right;
 }
 
 void DriveUnit::update()

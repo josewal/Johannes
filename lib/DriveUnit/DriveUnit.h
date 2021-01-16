@@ -19,11 +19,11 @@ public:
     int dist_to_reach = 0;
     int dist = 0;
 
-    MotorController leftController;
-    MotorController rightController;
+    MotorController &leftController;
+    MotorController &rightController;
 
-    DriveUnit();
-    void setup(MotorController _left, MotorController _right);
+    DriveUnit::DriveUnit(MotorController& , MotorController&);
+
     void update();
     boolean hasRotated();
     boolean hasArrived();

@@ -29,16 +29,15 @@ private:
 
 protected:
 public:
-    Motor motor;
+    Motor &motor;
     int motor_status;
-    Encoder encoder;
+    Encoder &encoder;
 
     float WHEEL_DIAMETER = 10.4 * PI; //cm
 
     int state;
 
-    MotorController();
-    MotorController(Motor mtr, Encoder enc);
+    MotorController::MotorController(Motor& , Encoder&);
     void setup(int dir = 1);
     void update();
 
