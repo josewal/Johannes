@@ -29,7 +29,7 @@ DriveUnit driver(leftController, rightController);
 HeadServo servo(10, 0, 180);
 
 Sonar *Sonar::instance = NULL;
-Sonar sonar(21, 34, 200);
+Sonar sonar(18, 34, 200);
 
 Organ head(servo, sonar);
 
