@@ -51,7 +51,6 @@ void MotorController::update()
     case 1:
         rpm_input = encoder.rpm;
         rpm_PID.Compute();
-
         break;
 
     case 2:

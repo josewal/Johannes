@@ -28,10 +28,10 @@ public:
     boolean hasRotated();
     boolean hasArrived();
     void stop();
-    void driveCM(int _cm);
-    void driveRPM(int _RPM);
-    void rotateBy(float _angle);
-    void rotateTo(float _angle);
+    void driveCM(int);
+    void driveRPM(int, int = 999);
+    void rotateBy(float);
+    void rotateTo(float);
 };
 
 #endif

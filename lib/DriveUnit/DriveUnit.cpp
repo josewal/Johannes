@@ -16,7 +16,6 @@ void DriveUnit::stop()
 {
     leftController.stop();
     rightController.stop();
-    Serial.println("stopped");
 }
 
 boolean DriveUnit::hasArrived()
@@ -42,7 +41,7 @@ boolean DriveUnit::hasArrived()
 
     return arrived;
 }
-
+ 
 boolean DriveUnit::hasRotated()
 {
 
@@ -69,6 +68,17 @@ void DriveUnit::driveCM(int _cm)
 
     leftController.moveCM(_cm);
     rightController.moveCM(_cm);
+}
+
+void DriveUnit::driveRPM(int _left, int _right = 999){
+    arrived = false;
+    leftController.moveRPM(_left);
+    if (_right == 999)
+    {
+        rightController.moveRPM(_left);
+    }else{
+        rightController.moveRPM(_right);
+    }
 }
 
 void DriveUnit::rotateTo(float _angle)
