@@ -62,7 +62,7 @@ void HeadServo::update()
 
 void HeadServo::setTarget(int _angle)
 {
-  angleToReach = constrain(_angle, MIN_ANGLE, MAX_ANGLE);
+  angleToReach = constrain(_angle+3, MIN_ANGLE, MAX_ANGLE);
 }
 
 boolean HeadServo::isSettled()

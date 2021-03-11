@@ -8,8 +8,18 @@ void DriveUnit::update()
 {
     leftController.update();
     rightController.update();
-    hasArrived();
-    hasRotated();
+    
+    switch (state)
+    {
+    case 1:
+        break;
+    case 2:
+        hasArrived();
+        hasRotated();
+        break;
+    default:
+        break;
+    }
 }
 
 void DriveUnit::stop()
@@ -41,7 +51,7 @@ boolean DriveUnit::hasArrived()
 
     return arrived;
 }
- 
+
 boolean DriveUnit::hasRotated()
 {
 
@@ -63,6 +73,7 @@ boolean DriveUnit::hasRotated()
 
 void DriveUnit::driveCM(int _cm)
 {
+    state = 2;
     arrived = false;
     dist_to_reach = dist + _cm;
 
@@ -70,13 +81,17 @@ void DriveUnit::driveCM(int _cm)
     rightController.moveCM(_cm);
 }
 
-void DriveUnit::driveRPM(int _left, int _right = 999){
+void DriveUnit::driveRPM(int _left, int _right = 999)
+{
+    state = 1;
     arrived = false;
     leftController.moveRPM(_left);
     if (_right == 999)
     {
         rightController.moveRPM(_left);
-    }else{
+    }
+    else
+    {
         rightController.moveRPM(_right);
     }
 }
