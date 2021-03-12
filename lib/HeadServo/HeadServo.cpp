@@ -29,7 +29,7 @@ void HeadServo::servoStep(int step_angle = 1)
   }
 
   last_step_time = millis();
-  servo.write(angle);
+  servo.write(map(angle,0,180,0,139));
 }
 
 void HeadServo::update()
@@ -62,7 +62,7 @@ void HeadServo::update()
 
 void HeadServo::setTarget(int _angle)
 {
-  angleToReach = constrain(_angle+3, MIN_ANGLE, MAX_ANGLE);
+  angleToReach = constrain(_angle, MIN_ANGLE, MAX_ANGLE);
 }
 
 boolean HeadServo::isSettled()

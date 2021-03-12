@@ -20,6 +20,8 @@ public:
     int MIN_ANGLE;
     int MAX_ANGLE;
     int angleToReach = 0;
+    
+    unsigned int unmappedAngle;
     int angle = 0;
 
 public:
