@@ -6,15 +6,20 @@
 #include <Servo.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
-#include <SharpIR.h>
 
 #include <Motor.h>
 #include <Encoder.h>
 #include <MotorController.h>
+#include <Sonar.h>
 #include <HeadServo.h>
 #include <Organ.h>
 #include <DriveUnit.h>
 
+#define ANSWERSIZE 5
+#define SLAVE_ADDR 8
+
+void recieveEvent(int _howMany);
+void requestEvent();
 
 int rpm_l = 0;
 int rpm_r = 0;
@@ -33,15 +38,18 @@ MotorController rightController(motorRight, encoderRight);
 DriveUnit driver(leftController, rightController);
 
 HeadServo servo(10, 0, 180);
-SharpIR sensor( SharpIR::GP2Y0A21YK0F, A0 );
 
+Sonar *Sonar::instance = NULL;
+Sonar sonar(18, 34, 200);
 
-Organ head(servo, sensor);
+Organ head(servo, sonar);
 
 int drive_seqeunce = -1;
 
 void setup()
 {
+  head.servo.begin(50, 0);
+  head.sonar.begin();
 
   Serial.begin(115200);
 
@@ -54,8 +62,8 @@ void setup()
   leftController.steps_PID_setup(4, 2, 0, 70);
   rightController.steps_PID_setup(4, 2, 0, 70);
 
-  head.state = 0;
   head.servo.setTarget(90);
+  drive_seqeunce = 1;
 }
 
 void resolveCommunication(){
@@ -64,15 +72,11 @@ void resolveCommunication(){
   Serial.flush();
   digitalWrite(LED_BUILTIN, LOW);
   StaticJsonDocument<200> doc;
-  deserializeJson(doc, json);
+  DeserializationError error = deserializeJson(doc, json);
 
-  if(doc["type"] == "servo"){
-    int angle = doc["angle"];
-    head.servo.setTarget(angle);
-  }else if(doc["type"] == "rpm"){
-    rpm_l = doc["rpm_l"];
-    rpm_r = doc["rpm_r"];
-  }  
+  head.servo.setTarget(doc["servo"]);
+  rpm_l = doc["rpm_l"];
+  rpm_r = doc["rpm_r"];
 }
 
 void loop()
@@ -85,4 +89,40 @@ void loop()
   driver.update();
   head.update();
   driver.driveRPM(rpm_l, rpm_r);
+<<<<<<< HEAD
 }
+=======
+
+  // switch (drive_seqeunce)
+  // {
+  // case 1:
+  //   if (head.state == -1)
+  //   {
+  //     head.servo.setTarget(90);
+  //     driver.rotateBy(head.max_dist_angle - 90);
+  //     drive_seqeunce = 2;
+  //   }
+  //   break;
+
+  // case 2:
+  //   if (driver.rotationDone)
+  //   {
+  //     int dist = min(150, head.max_dist - 30);
+  //     driver.driveCM(dist);
+  //     drive_seqeunce = 3;
+  //   }
+  //   break;
+
+  // case 3:
+  //   if (driver.arrived)
+  //   {
+  //     head.setScan(10, 0, 180);
+  //     drive_seqeunce = 1;
+  //   }
+  //   break;
+
+  // default:
+  //   break;
+  // }
+}
+>>>>>>> parent of 4f040d4 (adding dist sensor removing sonar)

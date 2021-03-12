@@ -3,27 +3,31 @@
 
 #include <Arduino.h>
 #include <HeadServo.h>
-#include <SharpIR.h>
-
+#include <Sonar.h>
 
 class Organ
 {
 private:
 public:
+    float min_dist = 999;
+    float max_dist = 0;
+    int min_dist_angle = 0;
+    int max_dist_angle = 0;
+    int obstacle_angle = 0;
 
-    unsigned int dists[180];
-    unsigned int lastPingAt = 0;
-    unsigned long last_measurment = 0;
+    int angle_pinged_at;
+    float distance = 0;
+
     unsigned int scan_start;
     unsigned int scan_end;
     unsigned int scan_step;
 
     int state = -1;
 
-    SharpIR sensor;
     HeadServo servo;
+    Sonar sonar;
 
-    Organ(HeadServo _servo, SharpIR _sensor);
+    Organ(HeadServo _servo, Sonar _sonar);
     void begin();
     void update();
 
