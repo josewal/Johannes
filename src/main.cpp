@@ -90,8 +90,11 @@ void loop()
   head.update();
   driver.driveRPM(rpm_l, rpm_r);
 <<<<<<< HEAD
+<<<<<<< HEAD
 }
 =======
+=======
+>>>>>>> parent of 4f040d4 (adding dist sensor removing sonar)
 
   // switch (drive_seqeunce)
   // {
