@@ -11,8 +11,6 @@ private:
     float WHEEL_SPREAD_CIRC = WHEEL_SPREAD * PI;
 
 public:
-    int state;
-
     boolean rotationDone = true;
     int angle_to_reach = 0;
     int angle = 0;

@@ -62,8 +62,7 @@ void Encoder::calculateRPM()
 {
     if (protected_step_time < 100000)
     {
-        rpm = -60000000 / (75 * protected_step_time);
-        rpm = rpm/3;
+        rpm = 60000000 / (75 * protected_step_time);
     }
     else
     {
