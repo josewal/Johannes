@@ -1,5 +1,0 @@
-function stop(ard)
-stop_cmd = '{"type":"rpm","rpm_l":100,"rpm_r":100}';
-
-write(ard,stop_cmd)
-end
